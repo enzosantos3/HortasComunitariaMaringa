@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hortas Comunitárias de Maringá - Mapeamento Sustentável</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="leaf-icon">🌱</span>
+                    <h1>Hortas Comunitárias de Maringá</h1>
+                </div>
+                <p class="subtitle">Mapeamento das Hortas Comunitárias Sustentáveis de Maringá - PR</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Seção de Busca e Filtros -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar horta por nome, bairro ou localização..."
+                        class="search-input"
+                    >
+                </div>
+                
+                <!-- Filtros -->
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="zoneFilter">Filtrar por Zona:</label>
+                        <select id="zoneFilter" class="filter-select">
+                            <option value="todas">Todas as Zonas</option>
+                            <option value="norte">Zona Norte</option>
+                            <option value="sul">Zona Sul</option>
+                            <option value="leste">Zona Leste</option>
+                            <option value="oeste">Zona Oeste</option>
+                            <option value="central">Zona Central</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="statusFilter">Filtrar por Status:</label>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="todos">Todos os Status</option>
+                            <option value="ativa">Hortas Ativas</option>
+                            <option value="planejamento">Em Planejamento</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <button id="locationBtn" class="btn btn-blue">
+                            📍 Minha Localização
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container">
+            <div class="content-grid">
+                <!-- Mapa Real -->
+                <div class="map-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <span class="map-icon">📍</span>
+                                Mapa das Hortas de Maringá
+                            </h2>
+                            <div class="map-controls">
+                                <button id="satelliteBtn" class="btn btn-small">🛰️ Satélite</button>
+                                <button id="exportBtn" class="btn btn-small">📄 Exportar</button>
+                                <button id="offlineBtn" class="btn btn-small">💾 Offline</button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div id="map" class="map-container-real"></div>
+                            <div id="routeInfo" class="route-info" style="display: none;">
+                                <div class="route-header">
+                                    <h4>Rota para a Horta</h4>
+                                    <button id="closeRoute" class="btn-close">✕</button>
+                                </div>
+                                <div id="routeDetails" class="route-details"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Hortas -->
+                <div class="hortas-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Hortas Encontradas (<span id="hortasCount">0</span>)</h2>
+                        <div class="sort-controls">
+                            <label for="sortSelect">Ordenar por:</label>
+                            <select id="sortSelect" class="filter-select">
+                                <option value="nome">Nome</option>
+                                <option value="distancia">Distância</option>
+                                <option value="zona">Zona</option>
+                                <option value="participantes">Participantes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="hortasList" class="hortas-list">
+                        <!-- Lista de hortas será inserida aqui pelo JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <section class="stats-section">
+                <h2>Estatísticas das Hortas de Maringá</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalHortas">0</div>
+                        <div class="stat-label">Total de Hortas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="hortasAtivas">0</div>
+                        <div class="stat-label">Hortas Ativas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="familiasBeneficiadas">0</div>
+                        <div class="stat-label">Famílias Beneficiadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="areaTotal">0</div>
+                        <div class="stat-label">Área Total (m²)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Informações sobre o Programa -->
+            <section class="program-info">
+                <div class="info-card">
+                    <h2>Programa de Hortas Comunitárias de Maringá</h2>
+                    <p>O programa de hortas comunitárias de Maringá é uma iniciativa da Prefeitura Municipal que visa promover a segurança alimentar, a sustentabilidade urbana e o fortalecimento dos laços comunitários através da agricultura urbana.</p>
+                    
+                    <div class="program-benefits">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🥬</span>
+                            <div>
+                                <h4>Alimentação Saudável</h4>
+                                <p>Produção de alimentos frescos e orgânicos para as famílias participantes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🌍</span>
+                            <div>
+                                <h4>Sustentabilidade</h4>
+                                <p>Práticas sustentáveis de cultivo e aproveitamento de espaços urbanos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="benefit-item">
+                            <span class="benefit-icon">👨‍👩‍👧‍👦</span>
+                            <div>
+                                <h4>Integração Social</h4>
+                                <p>Fortalecimento dos vínculos comunitários e inclusão social</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Educativa -->
+            <section class="educational-section">
+                <div class="educational-header">
+                    <div class="book-icon">📚</div>
+                    <h2>Por que Hortas Comunitárias?</h2>
+                </div>
+
+                <div class="benefits-grid">
+                    <div class="benefit-card green-border">
+                        <div class="benefit-header">
+                            <span class="benefit-icon">🌱</span>
+                            <h3>Sustentabilidade</h3>
+                        </div>
+                        <p>Promove práticas agrícolas sustentáveis e reduz a pegada de carbono através da produção local de alimentos em Maringá.</p>
+                    </div>
+
+                    <div class="benefit-card blue-border">
+                        <div class="benefit-header">
+                            <span class="benefit-icon">👥</span>
+                            <h3>Comunidade</h3>
+                        </div>
+                        <p>Fortalece os laços comunitários nos bairros de Maringá e promove a inclusão social através do trabalho colaborativo.</p>
+                    </div>
+
+                    <div class="benefit-card green-border">
+                        <div class="benefit-header">
+                            <span class="benefit-icon">📚</span>
+                            <h3>Educação</h3>
+                        </div>
+                        <p>Oferece educação ambiental prática e conscientização sobre agricultura urbana para os moradores de Maringá.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Como Participar -->
+            <section class="participation-section">
+                <h2>Como Participar das Hortas de Maringá?</h2>
+                <div class="participation-content">
+                    <p class="participation-intro">Interessado em participar de uma horta comunitária em Maringá? É simples!</p>
+                    <ol class="participation-steps">
+                        <li>Encontre uma horta próxima ao seu bairro no mapa acima</li>
+                        <li>Entre em contato com a Secretaria de Meio Ambiente de Maringá</li>
+                        <li>Participe dos encontros e atividades da comunidade local</li>
+                        <li>Contribua com seu tempo e conhecimento para o projeto</li>
+                    </ol>
+                    <div class="contact-info">
+                        <p><strong>Secretaria de Meio Ambiente:</strong> (44) 3901-1549</p>
+                        <p><strong>Email:</strong> meioambiente@maringa.pr.gov.br</p>
+                    </div>
+                    <button class="btn btn-blue" onclick="window.open('https://www.maringa.pr.gov.br/hortas-comunitarias', '_blank')">
+                        Saiba Mais no Site da Prefeitura
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="leaf-icon">🌱</span>
+                    <span class="footer-title">Hortas Comunitárias de Maringá</span>
+                </div>
+                <p class="footer-description">Promovendo sustentabilidade e bem-estar social através da agricultura urbana em Maringá - PR</p>
+                <p class="footer-credits">Desenvolvido por: Luiz Guilherme, Victor Hugo e Enzo</p>
+                <p class="footer-credits">Dados: Prefeitura Municipal de Maringá</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Loading -->
+    <div id="loadingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="loading-spinner"></div>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <!-- Leaflet Routing Machine -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    
+    <!-- jsPDF para exportação -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>
